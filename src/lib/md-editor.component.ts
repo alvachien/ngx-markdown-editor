@@ -6,6 +6,7 @@ import { MdEditorOption } from './md-editor.types';
 declare let ace: any;
 declare let marked: any;
 declare let hljs: any;
+declare let renderMathInElement: any;
 
 @Component({
   selector: 'md-editor',
@@ -78,8 +79,15 @@ export class MarkdownEditorComponent implements ControlValueAccessor, Validator 
     if (value !== null && value !== undefined) {
       if (this._renderMarkTimeout) clearTimeout(this._renderMarkTimeout);
       this._renderMarkTimeout = setTimeout(() => {
-        let html = marked(value || '', this._markedOpt);
+        let html = marked(value || '', this._markedOpt);        
         this.previewHtml = this._domSanitizer.bypassSecurityTrustHtml(html);
+        renderMathInElement(this.previewHtml, {
+          delimiters: [
+              {left: "$$", right: "$$", display: true},
+              {left: "\\(", right: "\\)", display: false},
+              {left: "$", right: "$", display: false},
+          ],
+        });
       }, 100);
     }
   }
@@ -137,6 +145,30 @@ export class MarkdownEditorComponent implements ControlValueAccessor, Validator 
       } else {
         return `<li>${text}</li>`;
       }
+    };
+    markedRender.paragraph = (text: any) => {
+      var isTeXInline     = /\$\$(.*)\$\$/g.test(text);
+      var isTeXLine       = /^\$\$(.*)\$\$$/.test(text);
+      var isTeXAddClass   = (isTeXLine)     ? " class=\"katex\"" : "";
+      // var isToC           = (settings.tocm) ? /^(\[TOC\]|\[TOCM\])$/.test(text) : /^\[TOC\]$/.test(text);
+      // var isToCMenu       = /^\[TOCM\]$/.test(text);
+      
+      if (!isTeXLine && isTeXInline) 
+      {
+          text = text.replace(/(\$\$([^\$]*)\$\$)+/g, ($1, $2) => {
+              return "<span class=\"katex\">" + $2.replace(/\$/g, "") + "</span>";
+          });
+      } 
+      else 
+      {
+          text = (isTeXLine) ? text.replace(/\$/g, "") : text;
+      }
+      
+      return "<p" + isTeXAddClass + ">" + text + "</p>\n" ;
+      // var tocHTML = "<div class=\"markdown-toc editormd-markdown-toc\">" + text + "</div>";
+      
+      // return (isToC) ? ( (isToCMenu) ? "<div class=\"editormd-toc-menu\">" + tocHTML + "</div><br/>" : tocHTML )
+      //                : ( (pageBreakReg.test(text)) ? this.pageBreak(text) : "<p" + isTeXAddClass + ">" + this.atLink(this.emoji(text)) + "</p>\n" );
     };
     let markedjsOpt = {
       renderer: markedRender,

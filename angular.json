@@ -49,11 +49,14 @@
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/font-awesome/css/font-awesome.min.css",
               "src/assets/highlight.js/agate.min.css",
+              "node_modules/katex/dist/katex.min.css",
               "demo/src/styles.scss"
             ],
             "scripts": [
               "src/assets/highlight.js/highlight.min.js",
-              "src/assets/marked.min.js"
+              "src/assets/marked.min.js",
+              "node_modules/katex/dist/katex.min.js",
+              "node_modules/katex/dist/contrib/auto-render.min.js"
             ]
           },
           "configurations": {
