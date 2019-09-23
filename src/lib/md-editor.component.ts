@@ -6,7 +6,7 @@ import { MdEditorOption } from './md-editor.types';
 declare let ace: any;
 declare let marked: any;
 declare let hljs: any;
-declare let renderMathInElement: any;
+declare let katex: any;
 
 @Component({
   selector: 'md-editor',
@@ -29,6 +29,7 @@ declare let renderMathInElement: any;
 export class MarkdownEditorComponent implements ControlValueAccessor, Validator {
 
   @ViewChild('aceEditor', { static: false }) public aceEditorContainer: ElementRef;
+  @ViewChild('acePreview', { static: false}) public acePreviewContainer: ElementRef;
   @Input() public hideToolbar: boolean = false;
   @Input() public height: string = "300px";
   @Input() public preRender: Function;
@@ -62,7 +63,7 @@ export class MarkdownEditorComponent implements ControlValueAccessor, Validator 
   public hideIcons: any = {};
   public showPreviewPanel: boolean = true;
   public isFullScreen: boolean = false;
-  public previewHtml: any;
+  // public previewHtml: any;
   public dragover: boolean = false;
   public isUploading: boolean = false;
 
@@ -80,14 +81,29 @@ export class MarkdownEditorComponent implements ControlValueAccessor, Validator 
       if (this._renderMarkTimeout) clearTimeout(this._renderMarkTimeout);
       this._renderMarkTimeout = setTimeout(() => {
         let html = marked(value || '', this._markedOpt);        
-        this.previewHtml = this._domSanitizer.bypassSecurityTrustHtml(html);
-        renderMathInElement(this.previewHtml, {
-          delimiters: [
-              {left: "$$", right: "$$", display: true},
-              {left: "\\(", right: "\\)", display: false},
-              {left: "$", right: "$", display: false},
-          ],
-        });
+        // let previewHtml = this._domSanitizer.bypassSecurityTrustHtml(html);
+        if (this.acePreviewContainer) {
+          this.acePreviewContainer.nativeElement.innerHTML = html;
+          let elem: HTMLDivElement = this.acePreviewContainer.nativeElement as HTMLDivElement;
+          let chlds = elem.getElementsByClassName('katex');
+          const orgcount = chlds.length;
+          for(let i = 0; i < orgcount; i++) {
+            let chdelem = chlds.item(i);
+            katex.render(chdelem.textContent, chdelem, {
+              throwOnError: false
+            });
+            // chdelem.setAttribute('font-size', '1.6em');
+            
+            // css("font-size", "1.6em");
+          }
+          // renderMathInElement(this.acePreviewContainer.nativeElement, {
+          //   delimiters: [
+          //       {left: "$$", right: "$$", display: true},
+          //       {left: "\\(", right: "\\)", display: false},
+          //       {left: "$", right: "$", display: false},
+          //   ],
+          // });
+        }
       }, 100);
     }
   }
