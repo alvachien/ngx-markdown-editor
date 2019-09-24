@@ -80,22 +80,24 @@ export class MarkdownEditorComponent implements ControlValueAccessor, Validator 
     if (value !== null && value !== undefined) {
       if (this._renderMarkTimeout) clearTimeout(this._renderMarkTimeout);
       this._renderMarkTimeout = setTimeout(() => {
-        let html = marked(value || '', this._markedOpt);        
+        let html = marked(value || '', this._markedOpt);
         // let previewHtml = this._domSanitizer.bypassSecurityTrustHtml(html);
         if (this.acePreviewContainer) {
           this.acePreviewContainer.nativeElement.innerHTML = html;
           let elem: HTMLDivElement = this.acePreviewContainer.nativeElement as HTMLDivElement;
           let chlds = elem.getElementsByClassName('katex');
           const orgcount = chlds.length;
+          let chldelems: any[] = [];
           for(let i = 0; i < orgcount; i++) {
-            let chdelem = chlds.item(i);
-            katex.render(chdelem.textContent, chdelem, {
-              throwOnError: false
-            });
+            chldelems.push(chlds.item(i));
             // chdelem.setAttribute('font-size', '1.6em');
-            
             // css("font-size", "1.6em");
           }
+          chldelems.forEach((cel: any) => {
+            katex.render(cel.textContent, cel, {
+              throwOnError: false
+            });
+          });
           // renderMathInElement(this.acePreviewContainer.nativeElement, {
           //   delimiters: [
           //       {left: "$$", right: "$$", display: true},
